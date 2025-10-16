@@ -25,3 +25,25 @@ new L.GPX(gpx, {
 }).on('loaded', function(e) {
   map.fitBounds(e.target.getBounds());
 }).addTo(map);
+
+// Controlla se il browser supporta la geolocalizzazione
+if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(function(position) {
+        // Coordinate dell’utente
+        var lat = position.coords.latitude;
+        var lon = position.coords.longitude;
+
+        // Aggiungi un marker sulla mappa
+        L.marker([lat, lon]).addTo(map)
+            .bindPopup("Sei qui!")
+            .openPopup();
+
+        // Centra la mappa sulla posizione
+        map.setView([lat, lon], 14);
+    }, function(error) {
+        console.error("Errore geolocalizzazione:", error);
+    });
+} else {
+    console.log("Geolocalizzazione non supportata dal browser");
+}
+
