@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gpx version="1.1" creator="Night Riders Route KM3" xmlns="http://www.topografix.com/GPX/1/1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <metadata>
+    <name>Night Riders Route KM3</name>
+    <desc>Percorso panoramico auto/moto: Bar Roma → Monte Grappa → Chalet alle Buse</desc>
+  </metadata>
+
+  <!-- Partenza: Bar Roma, Romano d'Ezzelino -->
+  <wpt lat="45.812345" lon="11.667890">
+    <name>Bar Roma</name>
+  </wpt>
+
+  <!-- Tappa panoramica: Monte Grappa -->
+  <wpt lat="45.956700" lon="11.769500">
+    <name>Monte Grappa</name>
+  </wpt>
+
+  <!-- Arrivo: Chalet alle Buse, Pedavena -->
+  <wpt lat="46.029800" lon="11.963200">
+    <name>Chalet alle Buse</name>
+  </wpt>
+
+  <trk>
+    <name>Percorso Night Riders Route KM3</name>
+    <trkseg>
+      <trkpt lat="45.812345" lon="11.667890" />
+      <trkpt lat="45.956700" lon="11.769500" />
+      <trkpt lat="46.029800" lon="11.963200" />
+    </trkseg>
+  </trk>
+</gpx>
