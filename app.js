@@ -47,9 +47,27 @@ if (navigator.geolocation) {
     console.log("Geolocalizzazione non supportata dal browser");
 }
 
+function checkStart(userLat, userLng) {
+  const startLat = 45.51241; // coordinate del punto di partenza
+  const startLng = 11.50781;
+  const radius = 0.3; // raggio in km (300 metri)
+
+  const dist = Math.sqrt(
+    Math.pow(userLat - startLat, 2) + Math.pow(userLng - startLng, 2)
+  ) * 111; // conversione approssimata da gradi a km
+
+  if (dist <= radius) {
+    L.marker([startLat, startLng])
+      .addTo(map)
+      .bindPopup("🚦 Sei arrivato al punto di partenza: NOGARAZZA!")
+      .openPopup();
+  }
+}
+
+
 function checkArrival(userLat, userLng) {
-  const eventLat = 45.9507; // esempio coordinate evento
-  const eventLng = 11.8804;
+  const eventLat = 45.50386; // esempio coordinate evento
+  const eventLng = 11.41584;
   const radius = 0.3; // 300 m
 
   const dist = Math.sqrt(
@@ -69,6 +87,7 @@ if (navigator.geolocation) {
     (pos) => {
       const lat = pos.coords.latitude;
       const lng = pos.coords.longitude;
+      ceckStart(lat, lng); 
       checkArrival(lat, lng);
     },
     (err) => {
@@ -81,5 +100,6 @@ if (navigator.geolocation) {
     }
   );
 }
+
 
 
