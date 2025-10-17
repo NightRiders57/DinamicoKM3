@@ -12,10 +12,10 @@ var gpx = 'percorso.gpx'; // il tuo file GPX
 new L.GPX(gpx, {
   async: true,
   marker_options: {
-    startIconUrl: 'icons/start.png',
-    endIconUrl: 'icons/end.png',
-    shadowUrl: 'icons/shadow.png',
-    wptIconUrls: { '': 'icons/waypoint.png' } // tutti gli altri waypoint
+    startIconUrl: './icons/start.png',
+    endIconUrl: './icons/end.png',
+    shadowUrl: './icons/shadow.png',
+    wptIconUrls: { '': './icons/waypoint.png' } // tutti gli altri waypoint
   },
   polyline_options: {
     color: 'orange',
@@ -81,4 +81,5 @@ if (navigator.geolocation) {
     }
   );
 }
+
 
