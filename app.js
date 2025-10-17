@@ -28,24 +28,38 @@ new L.GPX(gpx, {
 
 // Controlla se il browser supporta la geolocalizzazione
 if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(function(position) {
-        // Coordinate dell’utente
-        var lat = position.coords.latitude;
-        var lon = position.coords.longitude;
+  navigator.geolocation.watchPosition(
+    (pos) => {
+      const lat = pos.coords.latitude;
+      const lng = pos.coords.longitude;
 
-        // Aggiungi un marker sulla mappa
-        L.marker([lat, lon]).addTo(map)
-            .bindPopup("Sei qui!")
-            .openPopup();
+      // Se vuoi, puoi aggiornare il marker esistente invece di crearne uno nuovo ogni volta
+      if (window.userMarker) {
+        window.userMarker.setLatLng([lat, lng]);
+      } else {
+        window.userMarker = L.marker([lat, lng]).addTo(map)
+          .bindPopup("Sei qui!")
+          .openPopup();
+      }
 
-        // Centra la mappa sulla posizione
-        map.setView([lat, lon], 14);
-    }, function(error) {
-        console.error("Errore geolocalizzazione:", error);
-    });
-} else {
-    console.log("Geolocalizzazione non supportata dal browser");
+      map.setView([lat, lng], 14); // aggiorna la vista se vuoi
+      // Richiami le funzioni di controllo punti
+      checkStart(lat, lng);
+      checkFoto(lat, lng);
+      checkArrival(lat, lng);
+
+    },
+    (err) => {
+      console.warn("Errore geolocalizzazione:", err);
+    },
+    {
+      enableHighAccuracy: true,
+      maximumAge: 0,
+      timeout: 10000
+    }
+  );
 }
+
 
 function checkStart(userLat, userLng) {
   const startLat = 45.51241; // coordinate del punto di partenza
@@ -118,6 +132,7 @@ if (navigator.geolocation) {
     }
   );
 }
+
 
 
 
