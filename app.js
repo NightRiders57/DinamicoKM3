@@ -1,9 +1,7 @@
-// =====================
-// Inizializzazione mappa
-// =====================
+// Inizializza la mappa centrata genericamente
 var map = L.map('map').setView([45.0, 9.0], 13);
 
-// Tile layer OpenStreetMap
+// Tile base
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   maxZoom: 19
 }).addTo(map);
@@ -27,82 +25,112 @@ new L.GPX(gpx, {
   map.fitBounds(e.target.getBounds());
 }).addTo(map);
 
-// =====================
-// Audio di notifica
-// =====================
-const soundStart = new Audio('./sounds/start.mp3');
+// AUDIO
+const soundArrival = new Audio('./sounds/arrivo.mp3');
 const soundFoto = new Audio('./sounds/foto.mp3');
-const soundArrivo = new Audio('./sounds/arrivo.mp3');
+const soundStart = new Audio('./sounds/start.mp3');
 
-// =====================
+// VARIABILI GLOBALI
+let lastLat = null;
+let lastLng = null;
+let userMarker = null;
+
 // Funzioni di controllo punti
-// =====================
-function checkPoint(userLat, userLng, pointLat, pointLng, radiusKm, message, sound, flagName) {
-  const dist = Math.sqrt(
-    Math.pow(userLat - pointLat, 2) + Math.pow(userLng - pointLng, 2)
-  ) * 111; // da gradi a km
+function checkStart(lat, lng) {
+  const startLat = 45.51241;
+  const startLng = 11.50781;
+  const radius = 0.3;
 
-  if (dist <= radiusKm && !window[flagName]) {
-    window[flagName] = true;
-    L.marker([pointLat, pointLng])
+  const dist = Math.sqrt(
+    Math.pow(lat - startLat, 2) + Math.pow(lng - startLng, 2)
+  ) * 111;
+
+  if (dist <= radius) {
+    L.marker([startLat, startLng])
       .addTo(map)
-      .bindPopup(message)
+      .bindPopup("🚦 Sei arrivato al punto di partenza: NOGARAZZA!")
       .openPopup();
-    sound.play().catch(e => console.warn("Audio non riprodotto:", e));
+    soundStart.play();
   }
 }
 
-// =====================
-// Coordinate dei punti
-// =====================
-const startPoint = { lat: 45.51241, lng: 11.50781 };
-const fotoPoint = { lat: 45.51166, lng: 11.45001 };
-const endPoint = { lat: 45.50386, lng: 11.41584 };
+function checkFoto(lat, lng) {
+  const fotoLat = 45.51166;
+  const fotoLng = 11.45001;
+  const radius = 0.3;
 
-// =====================
-// Tracciamento in tempo reale
-// =====================
-let lastLat = null, lastLng = null;
-let firstView = false;
+  const dist = Math.sqrt(
+    Math.pow(lat - fotoLat, 2) + Math.pow(lng - fotoLng, 2)
+  ) * 111;
 
+  if (dist <= radius) {
+    L.marker([fotoLat, fotoLng])
+      .addTo(map)
+      .bindPopup("📸 Sei arrivato al punto foto! Rallenta e sorridi 😎")
+      .openPopup();
+    soundFoto.play();
+  }
+}
+
+function checkArrival(lat, lng) {
+  const eventLat = 45.50386;
+  const eventLng = 11.41584;
+  const radius = 0.3;
+
+  const dist = Math.sqrt(
+    Math.pow(lat - eventLat, 2) + Math.pow(lng - eventLng, 2)
+  ) * 111;
+
+  if (dist <= radius) {
+    L.marker([eventLat, eventLng])
+      .addTo(map)
+      .bindPopup("✅ Sei arrivato all'evento NIGHT RIDERS ROUTE KM3!")
+      .openPopup();
+    soundArrival.play();
+  }
+}
+
+// GEOLOCALIZZAZIONE IN TEMPO REALE
 if (navigator.geolocation) {
   navigator.geolocation.watchPosition(
     (pos) => {
       const lat = pos.coords.latitude;
       const lng = pos.coords.longitude;
 
-      // crea o aggiorna marker ruotabile
-      if (window.userMarker) {
-        if (lastLat !== null && lastLng !== null) {
-          const angle = Math.atan2(lng - lastLng, lat - lastLat) * 180 / Math.PI;
-          window.userMarker.setRotationAngle(angle);
-        }
-        window.userMarker.setLatLng([lat, lng]);
-      } else {
-        window.userMarker = L.marker([lat, lng], { rotationAngle: 0 })
-          .addTo(map)
-          .bindPopup("Sei qui!")
-          .openPopup();
-      }
-
-      // la mappa segue dolcemente la posizione
-      if (!firstView) {
-        map.setView([lat, lng], 14);
-        firstView = true;
-      } else {
-        map.panTo([lat, lng], { animate: true, duration: 0.5 });
+      // Calcola direzione di movimento
+      let heading = 0;
+      if (lastLat !== null && lastLng !== null) {
+        heading = Math.atan2(lng - lastLng, lat - lastLat) * (180 / Math.PI);
       }
 
       lastLat = lat;
       lastLng = lng;
 
-      // controlli punti
-      checkPoint(lat, lng, startPoint.lat, startPoint.lng, 0.3,
-        "🚦 Sei arrivato al punto di partenza: NOGARAZZA!", soundStart, "startDone");
-      checkPoint(lat, lng, fotoPoint.lat, fotoPoint.lng, 0.3,
-        "📸 Sei arrivato al punto foto! Rallenta e sorridi 😎", soundFoto, "fotoDone");
-      checkPoint(lat, lng, endPoint.lat, endPoint.lng, 0.3,
-        "✅ Sei arrivato all'evento NIGHT RIDERS ROUTE KM3!", soundArrivo, "arrivoDone");
+      // Se esiste già il marker, aggiorna posizione e rotazione
+      if (userMarker) {
+        userMarker.setLatLng([lat, lng]);
+        userMarker.setRotationAngle(heading);
+      } else {
+        userMarker = L.marker([lat, lng], {
+          rotationAngle: 0,
+          rotationOrigin: 'center center'
+        })
+          .addTo(map)
+          .bindPopup("Sei qui!")
+          .openPopup();
+      }
+
+      // Muove la mappa seguendo il marker, senza cambiare lo zoom
+      const center = map.getCenter();
+      const distance = map.distance(center, [lat, lng]);
+      if (distance > 50) { // sposta quando sei a 50 m dal bordo
+        map.panTo([lat, lng], { animate: true });
+      }
+
+      // Controlli
+      checkStart(lat, lng);
+      checkFoto(lat, lng);
+      checkArrival(lat, lng);
     },
     (err) => {
       console.warn("Errore geolocalizzazione:", err);
@@ -114,5 +142,5 @@ if (navigator.geolocation) {
     }
   );
 } else {
-  console.log("Geolocalizzazione non supportata dal browser");
+  alert("Geolocalizzazione non supportata dal browser.");
 }
