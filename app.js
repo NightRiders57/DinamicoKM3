@@ -33,16 +33,22 @@ if (navigator.geolocation) {
       const lat = pos.coords.latitude;
       const lng = pos.coords.longitude;
 
-      // Se vuoi, puoi aggiornare il marker esistente invece di crearne uno nuovo ogni volta
+      // Se esiste già il marker, aggiorna la posizione
       if (window.userMarker) {
         window.userMarker.setLatLng([lat, lng]);
       } else {
-        window.userMarker = L.marker([lat, lng]).addTo(map)
+        window.userMarker = L.marker([lat, lng])
+          .addTo(map)
           .bindPopup("Sei qui!")
           .openPopup();
       }
 
-      map.setView([lat, lng], 14); // aggiorna la vista se vuoi
+      // Centra la mappa sulla posizione solo la prima volta
+      if (!window.firstView) {
+        map.setView([lat, lng], 14);
+        window.firstView = true;
+      }
+
       // Richiami le funzioni di controllo punti
       checkStart(lat, lng);
       checkFoto(lat, lng);
@@ -132,6 +138,7 @@ if (navigator.geolocation) {
     }
   );
 }
+
 
 
 
