@@ -47,3 +47,38 @@ if (navigator.geolocation) {
     console.log("Geolocalizzazione non supportata dal browser");
 }
 
+function checkArrival(userLat, userLng) {
+  const eventLat = 45.9507; // esempio coordinate evento
+  const eventLng = 11.8804;
+  const radius = 0.3; // 300 m
+
+  const dist = Math.sqrt(
+    Math.pow(userLat - eventLat, 2) + Math.pow(userLng - eventLng, 2)
+  ) * 111;
+
+  if (dist <= radius) {
+    L.marker([eventLat, eventLng])
+      .addTo(map)
+      .bindPopup("✅ Sei arrivato all'evento NIGHT RIDERS ROUTE KM3!")
+      .openPopup();
+  }
+}
+
+if (navigator.geolocation) {
+  navigator.geolocation.watchPosition(
+    (pos) => {
+      const lat = pos.coords.latitude;
+      const lng = pos.coords.longitude;
+      checkArrival(lat, lng);
+    },
+    (err) => {
+      console.warn("Errore geolocalizzazione:", err);
+    },
+    {
+      enableHighAccuracy: true,
+      maximumAge: 0,
+      timeout: 10000
+    }
+  );
+}
+
