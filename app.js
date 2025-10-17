@@ -26,121 +26,84 @@ new L.GPX(gpx, {
   map.fitBounds(e.target.getBounds());
 }).addTo(map);
 
-// Controlla se il browser supporta la geolocalizzazione
+// Carica suono di notifica
+var audio = new Audio('sounds/ping.mp3'); // metti un file ping.mp3 nella cartella sounds
+
+// Variabili per rotazione e centro mappa
+let lastLat = null, lastLng = null;
+let firstView = false;
+
 if (navigator.geolocation) {
   navigator.geolocation.watchPosition(
     (pos) => {
       const lat = pos.coords.latitude;
       const lng = pos.coords.longitude;
 
-      // Se esiste già il marker, aggiorna la posizione
+      // Crea o aggiorna marker
       if (window.userMarker) {
+        // calcola angolo
+        if (lastLat !== null && lastLng !== null) {
+          const angle = Math.atan2(lng - lastLng, lat - lastLat) * 180 / Math.PI;
+          window.userMarker.setRotationAngle(angle); // serve Leaflet.RotatedMarker
+        }
         window.userMarker.setLatLng([lat, lng]);
       } else {
-        window.userMarker = L.marker([lat, lng])
+        window.userMarker = L.marker([lat, lng], { rotationAngle: 0 })
           .addTo(map)
           .bindPopup("Sei qui!")
           .openPopup();
       }
 
-      // Centra la mappa sulla posizione solo la prima volta
-      if (!window.firstView) {
+      // Centra mappa solo alla prima posizione
+      if (!firstView) {
         map.setView([lat, lng], 14);
-        window.firstView = true;
+        firstView = true;
+      } else {
+        map.panTo([lat, lng], { animate: true, duration: 0.5 });
       }
 
-      // Richiami le funzioni di controllo punti
+      lastLat = lat;
+      lastLng = lng;
+
+      // Controlli punti con suono
       checkStart(lat, lng);
       checkFoto(lat, lng);
       checkArrival(lat, lng);
 
     },
-    (err) => {
-      console.warn("Errore geolocalizzazione:", err);
-    },
-    {
-      enableHighAccuracy: true,
-      maximumAge: 0,
-      timeout: 10000
-    }
+    (err) => console.warn("Errore geolocalizzazione:", err),
+    { enableHighAccuracy: true, maximumAge: 0, timeout: 10000 }
   );
 }
 
+// Funzione generica per controllare arrivo a un punto
+function checkPoint(userLat, userLng, pointLat, pointLng, radiusKm, message) {
+  const dist = Math.sqrt(
+    Math.pow(userLat - pointLat, 2) + Math.pow(userLng - pointLng, 2)
+  ) * 111;
+
+  if (dist <= radiusKm) {
+    L.marker([pointLat, pointLng])
+      .addTo(map)
+      .bindPopup(message)
+      .openPopup();
+
+    // Suona solo la prima volta
+    if (!window[`played_${message}`]) {
+      audio.play();
+      window[`played_${message}`] = true;
+    }
+  }
+}
 
 function checkStart(userLat, userLng) {
-  const startLat = 45.51241; // coordinate del punto di partenza
-  const startLng = 11.50781;
-  const radius = 0.3; // raggio in km (300 metri)
-
-  const dist = Math.sqrt(
-    Math.pow(userLat - startLat, 2) + Math.pow(userLng - startLng, 2)
-  ) * 111; // conversione approssimata da gradi a km
-
-  if (dist <= radius) {
-    L.marker([startLat, startLng])
-      .addTo(map)
-      .bindPopup("🚦 Sei arrivato al punto di partenza: NOGARAZZA!")
-      .openPopup();
-  }
+  checkPoint(userLat, userLng, 45.51241, 11.50781, 0.3, "🚦 Sei arrivato al punto di partenza: NOGARAZZA!");
 }
 
 function checkFoto(userLat, userLng) {
-  const fotoLat = 45.51166; // coordinate punto foto
-  const fotoLng = 11.45001;
-  const radius = 0.3; // 300 metri
-
-  const dist = Math.sqrt(
-    Math.pow(userLat - fotoLat, 2) + Math.pow(userLng - fotoLng, 2)
-  ) * 111; // da gradi a km
-
-  if (dist <= radius) {
-    L.marker([fotoLat, fotoLng])
-      .addTo(map)
-      .bindPopup("📸 Sei arrivato al punto foto! Rallenta e sorridi 😎")
-      .openPopup();
-  }
+  checkPoint(userLat, userLng, 45.51166, 11.45001, 0.3, "📸 Sei arrivato al punto foto! Rallenta e sorridi 😎");
 }
-
 
 function checkArrival(userLat, userLng) {
-  const eventLat = 45.50386; // esempio coordinate evento
-  const eventLng = 11.41584;
-  const radius = 0.3; // 300 m
-
-  const dist = Math.sqrt(
-    Math.pow(userLat - eventLat, 2) + Math.pow(userLng - eventLng, 2)
-  ) * 111;
-
-  if (dist <= radius) {
-    L.marker([eventLat, eventLng])
-      .addTo(map)
-      .bindPopup("✅ Sei arrivato all'evento NIGHT RIDERS ROUTE KM3!")
-      .openPopup();
-  }
+  checkPoint(userLat, userLng, 45.50386, 11.41584, 0.3, "✅ Sei arrivato all'evento NIGHT RIDERS ROUTE KM3!");
 }
-
-if (navigator.geolocation) {
-  navigator.geolocation.watchPosition(
-    (pos) => {
-      const lat = pos.coords.latitude;
-      const lng = pos.coords.longitude;
-      ceckStart(lat, lng);
-      ceckFoto(lat, lng);
-      checkArrival(lat, lng);
-    },
-    (err) => {
-      console.warn("Errore geolocalizzazione:", err);
-    },
-    {
-      enableHighAccuracy: true,
-      maximumAge: 0,
-      timeout: 10000
-    }
-  );
-}
-
-
-
-
-
-
