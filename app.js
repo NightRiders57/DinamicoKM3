@@ -64,6 +64,23 @@ function checkStart(userLat, userLng) {
   }
 }
 
+function checkFoto(userLat, userLng) {
+  const fotoLat = 45.51166; // coordinate punto foto
+  const fotoLng = 11.45001;
+  const radius = 0.3; // 300 metri
+
+  const dist = Math.sqrt(
+    Math.pow(userLat - fotoLat, 2) + Math.pow(userLng - fotoLng, 2)
+  ) * 111; // da gradi a km
+
+  if (dist <= radius) {
+    L.marker([fotoLat, fotoLng])
+      .addTo(map)
+      .bindPopup("📸 Sei arrivato al punto foto! Rallenta e sorridi 😎")
+      .openPopup();
+  }
+}
+
 
 function checkArrival(userLat, userLng) {
   const eventLat = 45.50386; // esempio coordinate evento
@@ -87,7 +104,8 @@ if (navigator.geolocation) {
     (pos) => {
       const lat = pos.coords.latitude;
       const lng = pos.coords.longitude;
-      ceckStart(lat, lng); 
+      ceckStart(lat, lng);
+      ceckFoto(lat, lng);
       checkArrival(lat, lng);
     },
     (err) => {
@@ -100,6 +118,7 @@ if (navigator.geolocation) {
     }
   );
 }
+
 
 
 
