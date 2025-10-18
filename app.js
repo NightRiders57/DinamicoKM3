@@ -36,11 +36,10 @@ let lastLat = null;
 let lastLng = null;
 let lastAngle = 0;
 
-// Funzione per calcolare direzione
+// Funzione per calcolare direzione (bearing)
 function getBearing(lat1, lon1, lat2, lon2) {
   const toRad = (deg) => (deg * Math.PI) / 180;
   const toDeg = (rad) => (rad * 180) / Math.PI;
-
   const dLon = toRad(lon2 - lon1);
   const y = Math.sin(dLon) * Math.cos(toRad(lat2));
   const x =
@@ -58,6 +57,13 @@ function checkPoint(userLat, userLng, pointLat, pointLng, radiusKm, message, sou
   }
 }
 
+// Applica rotazione mappa
+function rotateMap(angle) {
+  const mapContainer = map.getContainer();
+  mapContainer.style.transition = "transform 0.5s linear";
+  mapContainer.style.transform = `rotate(${-angle}deg)`; // ruota in direzione opposta al marker
+}
+
 // Geolocalizzazione
 if (navigator.geolocation) {
   console.log("Geolocalizzazione attiva...");
@@ -68,30 +74,24 @@ if (navigator.geolocation) {
       console.log(`Posizione aggiornata: ${lat}, ${lng}`);
 
       if (userMarker) {
-        // Calcola angolo solo se abbiamo una posizione precedente
         if (lastLat !== null && lastLng !== null) {
           const angle = getBearing(lastLat, lastLng, lat, lng);
           lastAngle = angle;
-          userMarker.setRotationAngle(angle); // <-- rotazione del marker
+          rotateMap(angle); // ruota la mappa
         }
         userMarker.setLatLng([lat, lng]);
       } else {
-        // Crea marker ruotabile
+        // Crea marker fisso al centro
         const icon = L.icon({
-          iconUrl: './icons/arrow.png', // icona tipo freccia
+          iconUrl: './icons/arrow.png',
           iconSize: [40, 40],
           iconAnchor: [20, 20]
         });
-        userMarker = L.marker([lat, lng], { icon: icon, rotationAngle: 0 }).addTo(map);
+        userMarker = L.marker(map.getCenter(), { icon: icon, interactive: false }).addTo(map);
       }
 
-      // Centra la mappa
-      if (firstUpdate) {
-        map.setView([lat, lng], 15);
-        firstUpdate = false;
-      } else {
-        map.panTo([lat, lng], { animate: true });
-      }
+      // Mantiene la freccia al centro della vista
+      map.setView([lat, lng]);
 
       // Controlli tappe
       checkPoint(lat, lng, 45.51241, 11.50781, 0.3, "🚦 Sei al punto di partenza!", soundStart);
