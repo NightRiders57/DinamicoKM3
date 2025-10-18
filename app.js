@@ -1,5 +1,10 @@
-// Inizializza la mappa
-var map = L.map('map', { zoomControl: false }).setView([45.0, 9.0], 13);
+// Inizializza la mappa con supporto rotazione
+var map = L.map('map', {
+  zoomControl: false,
+  rotate: true,       // abilita rotazione
+  touchRotate: true,  // permette rotazione da touch
+  bearing: 0          // angolo iniziale
+}).setView([45.0, 9.0], 13);
 
 // Layer base
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -36,7 +41,7 @@ let lastLat = null;
 let lastLng = null;
 let lastAngle = 0;
 
-// Funzione per calcolare direzione (bearing)
+// Funzione per calcolare la direzione (bearing)
 function getBearing(lat1, lon1, lat2, lon2) {
   const toRad = (deg) => (deg * Math.PI) / 180;
   const toDeg = (rad) => (rad * 180) / Math.PI;
@@ -48,7 +53,7 @@ function getBearing(lat1, lon1, lat2, lon2) {
   return (toDeg(Math.atan2(y, x)) + 360) % 360;
 }
 
-// Funzione per controllare punti
+// Funzione per controllare punti e suoni
 function checkPoint(userLat, userLng, pointLat, pointLng, radiusKm, message, sound) {
   const dist = Math.sqrt(Math.pow(userLat - pointLat, 2) + Math.pow(userLng - pointLng, 2)) * 111;
   if (dist <= radiusKm) {
@@ -57,14 +62,7 @@ function checkPoint(userLat, userLng, pointLat, pointLng, radiusKm, message, sou
   }
 }
 
-// Applica rotazione mappa
-function rotateMap(angle) {
-  const mapContainer = map.getContainer();
-  mapContainer.style.transition = "transform 0.5s linear";
-  mapContainer.style.transform = `rotate(${-angle}deg)`; // ruota in direzione opposta al marker
-}
-
-// Geolocalizzazione
+// Geolocalizzazione continua
 if (navigator.geolocation) {
   console.log("Geolocalizzazione attiva...");
   navigator.geolocation.watchPosition(
@@ -77,21 +75,28 @@ if (navigator.geolocation) {
         if (lastLat !== null && lastLng !== null) {
           const angle = getBearing(lastLat, lastLng, lat, lng);
           lastAngle = angle;
-          rotateMap(angle); // ruota la mappa
+
+          // 👉 Ruota la mappa seguendo la direzione di marcia
+          map.setBearing(angle);
         }
         userMarker.setLatLng([lat, lng]);
       } else {
-        // Crea marker fisso al centro
+        // Marker fisso (freccia sempre rivolta in avanti)
         const icon = L.icon({
           iconUrl: './icons/arrow.png',
           iconSize: [40, 40],
           iconAnchor: [20, 20]
         });
-        userMarker = L.marker(map.getCenter(), { icon: icon, interactive: false }).addTo(map);
+        userMarker = L.marker([lat, lng], { icon: icon }).addTo(map);
       }
 
-      // Mantiene la freccia al centro della vista
-      map.setView([lat, lng]);
+      // Centra e segue il movimento
+      if (firstUpdate) {
+        map.setView([lat, lng], 15);
+        firstUpdate = false;
+      } else {
+        map.panTo([lat, lng], { animate: true });
+      }
 
       // Controlli tappe
       checkPoint(lat, lng, 45.51241, 11.50781, 0.3, "🚦 Sei al punto di partenza!", soundStart);
