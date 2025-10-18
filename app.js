@@ -102,9 +102,9 @@ if (navigator.geolocation) {
       }
 
       // Controlli tappe
-      checkPoint(lat, lng, 45.51241, 11.50781, 0.3, "🚦 Sei al punto di partenza!", soundStart);
-      checkPoint(lat, lng, 45.51166, 11.45001, 0.3, "📸 Punto foto!", soundFoto);
-      checkPoint(lat, lng, 45.50386, 11.41584, 0.3, "✅ Sei arrivato all'evento!", soundArrival);
+      checkPoint(lat, lng, 45.469416, 11.452702, 0.2, "🚦 Sei al punto di partenza!", soundStart);
+      checkPoint(lat, lng, 45.483542, 11.512597, 0.5, "📸 Punto foto!", soundFoto);
+      checkPoint(lat, lng, 45.474366, 11.541768, 0.2, "✅ Sei arrivato all'evento!", soundArrival);
 
       lastLat = lat;
       lastLng = lng;
