@@ -1,13 +1,53 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Night Riders Route KM3</title>
-  
+
+  <!-- Leaflet CSS prima di tutto -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-  <link rel="stylesheet" href="style.css">
-  <link rel="manifest" href="manifest.json">
+
+  <!-- tuo CSS (se vuoi usare style.css tienilo, ma questo assicura le regole importanti ora) -->
+  <link rel="stylesheet" href="style.css" />
+  <link rel="manifest" href="manifest.json" />
+
+  <!-- Regole critiche per evitare bordi neri -->
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      overflow: hidden; /* fondamentale */
+      background: #000;
+    }
+
+    /* facciamo che #map sia più grande del viewport per coprire gli angoli quando ruota */
+    #map {
+      position: absolute;
+      top: -10vh;
+      left: -10vw;
+      width: 120vw;
+      height: 120vh;
+      transform-origin: center center;
+      overflow: hidden;
+      touch-action: pan-y pan-x;
+    }
+
+    /* titolo fuori dalla mappa (opzionale): lo renderizzi sopra con z-index se vuoi */
+    h1 {
+      position: absolute;
+      left: 10px;
+      top: 6px;
+      margin: 0;
+      padding: 6px 10px;
+      color: #fff;
+      background: rgba(0,0,0,0.4);
+      border-radius: 6px;
+      z-index: 1000;
+      font-family: Arial, sans-serif;
+    }
+  </style>
 </head>
 
 <body>
@@ -16,13 +56,14 @@
 
   <!-- Libreria base Leaflet -->
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-  <!-- Plugin per GPX -->
+
+  <!-- Plugin GPX -->
   <script src="https://unpkg.com/leaflet-gpx/gpx.js"></script>
 
-  <!-- Plugin per rotazione marker -->
+  <!-- RotatedMarker (caricalo una sola volta) -->
   <script src="https://rawcdn.githack.com/bbecquet/Leaflet.RotatedMarker/master/leaflet.rotatedMarker.js"></script>
-  <script src="https://rawcdn.githack.com/bbecquet/Leaflet.RotatedMarker/master/leaflet.rotatedMarker.js"></script>
-  <!-- Tuo script principale -->
+
+  <!-- Il tuo script principale -->
   <script src="app.js"></script>
 </body>
 </html>
