@@ -1,3 +1,3 @@
 body { margin: 0; font-family: Arial, sans-serif; background: #000; color: #fff; }
 h1 { text-align: center; color: orange; margin: 10px 0; }
-#map { width: 120%; height: 120vh; }
+#map { position:absolute; top:-10vh; left:-10vw; width:120vw; height:120vh; transform-origin:center center; overflow:hidden; }
