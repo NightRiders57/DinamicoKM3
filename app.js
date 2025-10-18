@@ -34,12 +34,13 @@ let userMarker = null;
 let firstUpdate = true;
 let lastLat = null;
 let lastLng = null;
-let lastAngle = 0;
+let currentRotation = 0;
 
 // Funzione per calcolare direzione (bearing)
 function getBearing(lat1, lon1, lat2, lon2) {
-  const toRad = (deg) => (deg * Math.PI) / 180;
-  const toDeg = (rad) => (rad * 180) / Math.PI;
+  const toRad = deg => deg * Math.PI / 180;
+  const toDeg = rad => rad * 180 / Math.PI;
+
   const dLon = toRad(lon2 - lon1);
   const y = Math.sin(dLon) * Math.cos(toRad(lat2));
   const x =
@@ -57,11 +58,12 @@ function checkPoint(userLat, userLng, pointLat, pointLng, radiusKm, message, sou
   }
 }
 
-// Applica rotazione mappa
+// Ruota la mappa attorno al marker
 function rotateMap(angle) {
   const mapContainer = map.getContainer();
-  mapContainer.style.transition = "transform 0.5s linear";
-  mapContainer.style.transform = `rotate(${-angle}deg)`; // ruota in direzione opposta al marker
+  mapContainer.style.transition = 'transform 0.5s linear';
+  mapContainer.style.transformOrigin = 'center center';
+  mapContainer.style.transform = `rotate(${-angle}deg)`;
 }
 
 // Geolocalizzazione
@@ -71,32 +73,38 @@ if (navigator.geolocation) {
     (pos) => {
       const lat = pos.coords.latitude;
       const lng = pos.coords.longitude;
-      console.log(`Posizione aggiornata: ${lat}, ${lng}`);
 
+      // Se esiste già il marker, aggiorna posizione
       if (userMarker) {
+        // Calcola direzione di movimento
         if (lastLat !== null && lastLng !== null) {
           const angle = getBearing(lastLat, lastLng, lat, lng);
-          lastAngle = angle;
+          currentRotation = angle;
           rotateMap(angle); // ruota la mappa
         }
         userMarker.setLatLng([lat, lng]);
       } else {
-        // Crea marker fisso al centro
+        // Crea marker freccia (sempre fisso verso nord)
         const icon = L.icon({
           iconUrl: './icons/arrow.png',
           iconSize: [40, 40],
           iconAnchor: [20, 20]
         });
-        userMarker = L.marker(map.getCenter(), { icon: icon, interactive: false }).addTo(map);
+        userMarker = L.marker([lat, lng], { icon: icon }).addTo(map);
       }
 
-      // Mantiene la freccia al centro della vista
-      map.setView([lat, lng]);
+      // Centra la mappa
+      if (firstUpdate) {
+        map.setView([lat, lng], 15);
+        firstUpdate = false;
+      } else {
+        map.panTo([lat, lng], { animate: true });
+      }
 
       // Controlli tappe
-      checkPoint(lat, lng, 45.469416, 11.452702, 0.2, "🚦 Sei al punto di partenza!", soundStart);
-      checkPoint(lat, lng, 45.483542, 11.512597, 0.5, "📸 Punto foto!", soundFoto);
-      checkPoint(lat, lng, 45.474366, 11.541768, 0.2, "✅ Sei arrivato all'evento!", soundArrival);
+      checkPoint(lat, lng, 45.51241, 11.50781, 0.3, "🚦 Sei al punto di partenza!", soundStart);
+      checkPoint(lat, lng, 45.51166, 11.45001, 0.3, "📸 Punto foto!", soundFoto);
+      checkPoint(lat, lng, 45.50386, 11.41584, 0.3, "✅ Sei arrivato all'evento!", soundArrival);
 
       lastLat = lat;
       lastLng = lng;
