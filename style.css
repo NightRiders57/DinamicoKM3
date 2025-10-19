@@ -1,3 +1,24 @@
 body { margin: 0; font-family: Arial, sans-serif; background: #000; color: #fff; }
-h1 { text-align: center; color: orange; margin: 10px 0; }
-#map { position:absolute; top:-10vh; left:-10vw; width:120vw; height:120vh; transform-origin:center center; overflow:hidden; }
+#map {
+  height: 100vh;
+  width: 100%;
+  position: relative;
+}
+
+/* Titolo sopra la mappa */
+#title {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.4);
+  color: orange;          /* 🔸 mantiene il colore attuale */
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-family: Arial, sans-serif;
+  font-size: 18px;
+  font-weight: bold;
+  z-index: 1000;
+  text-align: center;
+  pointer-events: none;   /* così non blocca tocchi o clic sulla mappa */
+}
