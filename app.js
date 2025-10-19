@@ -25,6 +25,37 @@ new L.GPX(gpx, {
   map.fitBounds(e.target.getBounds());
 }).addTo(map);
 
+// --- MANTIENI SCHERMO SEMPRE ATTIVO ---
+let wakeLock = null;
+
+async function attivaWakeLock() {
+  try {
+    if ('wakeLock' in navigator) {
+      wakeLock = await navigator.wakeLock.request('screen');
+      console.log('🔋 Schermo sempre acceso attivato');
+      // Se il lock viene rilasciato (es. lo schermo si spegne manualmente), riattivalo
+      wakeLock.addEventListener('release', () => {
+        console.log('❌ Wake Lock rilasciato, riattivo...');
+        attivaWakeLock();
+      });
+    } else {
+      console.log('⚠️ Wake Lock non supportato su questo browser');
+    }
+  } catch (err) {
+    console.error(`${err.name}, ${err.message}`);
+  }
+}
+
+// Riattiva se la scheda torna visibile
+document.addEventListener('visibilitychange', () => {
+  if (wakeLock !== null && document.visibilityState === 'visible') {
+    attivaWakeLock();
+  }
+});
+
+// Attiva appena la pagina è pronta
+window.addEventListener('load', attivaWakeLock);
+
 // Suoni
 const soundArrival = new Audio('./sounds/arrivo.mp3');
 const soundFoto = new Audio('./sounds/foto.mp3');
