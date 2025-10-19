@@ -2,12 +2,11 @@ body { margin: 0; font-family: Arial, sans-serif; background: #000; color: #fff;
 #map {
   height: 100vh;
   width: 100%;
-  position: relative;
 }
 
 /* Titolo sopra la mappa */
 #title {
-  position: absolute;
+  position: fixed;
   top: 10px;
   left: 50%;
   transform: translateX(-50%);
